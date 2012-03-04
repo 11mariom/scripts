@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+arch=$( arch )
+ftp="https://ftp.mozilla.org/pub/mozilla.org/firefox/"
+branch=""
+IFS="
+"
+declare -a file
+
+find_downloads() {
+	file=( $( curl -silent $ftp$branch | awk -v arch=$arch '/en-US.linux.*.tar.bz2/ {gsub(/<[^>]*>/, " "); if(match($0, arch)) print $1}' ) )
+}
+
+manage_choice() {
+    if [ ${#file[@]} -gt 1 ]; then
+	echo "There are more than one version, which one do you like?"
+
+	for (( i=0; $i < ${#file[@]}; i++ )); do
+	    echo " $i - ${file[$i]}"
+	done
+
+	read choice
+    else
+	choice=0
+    fi
+
+    download=${file[$choice]}
+}
+
+case $1 in
+    release)
+	branch="/releases/latest/linux-${arch}/en-US/"
+	file=( $( curl -silent $ftp$branch | awk '/tar.bz2</ {gsub(/<[^>]*>/, " "); print $1}' ) )
+	manage_choice
+
+	dir=${download%.tar.bz2}
+	;;
+    nightly)
+	branch="/nightly/latest-mozilla-central/"
+	find_downloads
+	manage_choice
+
+	dir=${download%.en-US*}
+	;;
+    aurora)
+	branch="/nightly/latest-mozilla-aurora/"
+	find_downloads
+	manage_choice
+
+	dir=${download%.en-US*}
+	;;
+    *)
+	echo "Please use (release|aurora|nightly)!"
+	exit 1
+	;;
+esac
+
+wget $ftp$branch$download
+tar xjf $download -C $HOME
+mv $HOME/firefox $HOME/$dir
+rm $download

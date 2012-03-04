@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+available() {
+    IFS="
+"
+    avai=( $( find ~ -maxdepth 1 -name "firefox-*" -or -name "fx-*" -not -name "*.old" ) )
+    avai+=( $( which -a firefox | grep -v ~ ) )
+}
+
+setFirefox() {
+    rm ~/bin/firefox$2
+    ln -s "${avai[$(($1-1))]}/firefox-bin" ~/bin/firefox$2
+}
+
+available
+
+case $1 in
+    list)
+	echo -e "\033[1;32mDostępne wersje firefox:"
+
+	link="$( readlink ~/bin/firefox-bin )"
+
+	for (( i=0; $i < ${#avai[@]}; i++ )); do
+	    if [[ "${avai[$i]}/firefox-bin" == "${link}" ]]; then
+		echo -ne " \033[0;34m*"
+	    else
+		echo -n "  "
+	    fi
+	    echo -e " \033[1;39m[$(($i+1))]  \033[1;0m${avai[$i]}"
+	done
+	;;
+    set)
+	if [[ $3 == "n" ]]; then
+	    z=""
+	else
+	    z="-bin"
+	fi
+
+	setFirefox $2 $z
+	;;
+esac
