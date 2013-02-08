@@ -37,7 +37,7 @@ end
 o = arg[1]
 read()
 if     o == "ls" then print_t( arg[2] )
-elseif o == "rm" then table.remove( tasks, n )
+elseif o == "rm" then table.remove( tasks, arg[2] )
 elseif o == "check" or o == "undo" then toggle( tonumber( arg[2] ) )
 elseif o == "clear" then tasks = {}
 else   table.insert( tasks, "-" .. o )
