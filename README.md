@@ -34,7 +34,7 @@ Simple lua todo ;)
 Use:
 
    * ls - list tasks
-   * rm - deleta task
+   * rm - delete task
    * check/undo - toggle task
    * clear - delete all tasks
    * "something to do" - add task
