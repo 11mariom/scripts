@@ -31,6 +31,7 @@ for ((i = 0; i < $ARGC; i++)); do
 
     scp -P$SSHPORT "$file" "$USER@$SERVER:$WWWPATH/$basefile" > /dev/null 2>&1
     exitcode=$?
+    chmod $mode "$file"
 
     if [[ exitcode -ne 0 ]]
     then
@@ -39,7 +40,5 @@ for ((i = 0; i < $ARGC; i++)); do
     else
 	echo "http://$SERVER/$basefile"
     fi
-
-    chmod $mode "$file"
 done
 
