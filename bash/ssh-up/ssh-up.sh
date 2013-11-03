@@ -5,14 +5,60 @@ get_chmod() {
     echo $mode
 }
 
+help() {
+    cat <<EOF
+ssh-up <options> FILE1 [FILE2 …]
+Options:
+-h		help
+-c conf		config file
+-s serv		server adress
+-w wwwdir	www directory
+-p port		ssh port
+EOF
+}
+
 ARGC=$#
 ARGV=("$@")
 SERVER=""
 WWWPATH=""
 SSHPORT=""
 
-for ((i = 0; i < $ARGC; i++)); do
-    file=${ARGV[i]}
+shift_n=0
+
+while getopts "h:s:w:p:c" opt; do
+    case $opt in
+	h)
+	    help
+	    exit 0
+	    ;;
+	s)
+	    SERVER=$OPTARG
+	    shift_n=$(( shift_n + 2 ))
+	    ;;
+	w)
+	    WWWPATH=$OPTARG
+	    shift_n=$(( shift_n + 2 ))
+	    ;;
+	p)
+	    SSHPORT=$OPTARG
+	    shift_n=$(( shift_n + 2 ))
+	    ;;
+	c)
+	    source $OPTARG
+	    shift_n=$(( shift_n + 2 ))
+	    ;;
+	\?)
+	    help
+	    exit 1
+	    ;;
+    esac
+done
+
+shift $shift_n
+
+while [[ $# > 0 ]]; do
+    file=$1
+    echo $file
     #get filename from path
     basefile="$( basename $file )"
     #change spaces to _
@@ -26,7 +72,7 @@ for ((i = 0; i < $ARGC; i++)); do
 	exit 1
     fi
 
-    echo "$i. $file"
+    echo "uploading $file"
     chmod 644 "$file"
 
     scp -P$SSHPORT "$file" "$USER@$SERVER:$WWWPATH/$basefile" > /dev/null 2>&1
@@ -40,5 +86,7 @@ for ((i = 0; i < $ARGC; i++)); do
     else
 	echo "http://$SERVER/$basefile"
     fi
+
+    shift
 done
 
